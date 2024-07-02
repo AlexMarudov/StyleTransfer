@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перенос стиля</title>
+    <style>
+        
+        body {
+            background-image: url('https://i.gifer.com/Gn9p.gif');
+            background-size: cover;
+            background-position: center;
+        }
+        h1 {
+            color: #0f0;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            font-family: 'DejaVu Sans Mono', monospace;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #0f0;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'DejaVu Sans Mono', monospace;
+            text-transform: uppercase;
+        }
+        button:hover {
+            background-color: #0a0;
+        }
+        .container {
+            text-align: center;
+        }
+        #galleryInput {
+            display: none;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            /* Увеличить размер изображения (например, 500 пикселей по ширине) */
+            width: 1000px;
+            /* Центрировать изображение */
+            display: block;
+            margin: 0 auto;
+        }
+        @font-face {
+            font-family: 'MatrixFont';
+            src: url('fonts/miltown-ii.regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @media screen and (max-width: 600px) {
+            h1 {
+                font-family: 'MatrixFont', sans-serif;
+                font-size: 1.5rem;
+            }
+            input, button {
+                font-family: 'MatrixFont', sans-serif;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Style Transfer</h1>
+        <input type="file" id="galleryInput" accept="image/">
+        <button id="uploadButton">Load image</button>
+        <label for="galleryInput" id="fileNameLabel"></label>
+        <br>
+        <img id="output" src="" alt="">
+    </div>
+
+    <script>
+        // Обработчик кнопки загрузки изображения из галереи
+        document.getElementById('uploadButton').addEventListener('click', () => {
+            document.getElementById('galleryInput').click();
+        });
+
+        document.getElementById('galleryInput').addEventListener('change', () => {
+            const input = document.getElementById('galleryInput');
+            if (input.files && input.files[0]) {
+                document.getElementById('fileNameLabel').textContent = input.files[0].name;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Показать индикатор загрузки
+                    document.getElementById('output').src = ''; // Очистить предыдущее изображение
+                    document.getElementById('output').alt = 'Загрузка...';
+
+                    // Отправить изображение на сервер
+                    const imageData = e.target.result.split(',')[1]; // Получаем base64 без префикса
+                    fetch('/', {
+                        method: 'POST',
+                        body: JSON.stringify({ image: imageData }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Ошибка сервера: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('output').src = `data:image/jpeg;base64,${data.image}`; // Добавляем префикс base64
+                        document.getElementById('output').alt = 'Обработанное изображение';
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        document.getElementById('output').alt = 'Ошибка загрузки изображения';
+                    });
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                document.getElementById('fileNameLabel').textContent = '';
+            }
+        });
+    </script>
+</body>
+</html>
