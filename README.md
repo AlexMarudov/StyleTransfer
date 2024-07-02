@@ -1,2 +1,2 @@
 # Перенос стиля
-<img src="examples/examples.png" alt="Пример работы модели">
+<img src="examples/example.png" alt="Пример работы модели">
